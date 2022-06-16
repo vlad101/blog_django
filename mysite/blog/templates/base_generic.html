@@ -27,33 +27,47 @@
 
 <body>
 
-<div class="container-fluid">
+    <div class="container">
+      <div class="row" >
+        {% block sidebar %}
+          <div class="col-sm-2 sidebar-nav">
+                  
+              <ul>
+                <li>
+                  <img src="{% static "img/icon.png" %}" alt="My image" width="100px" />
+                </li> 
+                <li> 
+                 {% if user.is_authenticated %}
+                      User: {{ user.get_username }}
+                </li> 
+                <li>
+                   <a href="{% url 'logout'%}?next={{request.path}}">Logout</a> 
+                
+                 {% else %}
+                
+                  <a href="{% url 'login'%}?next={{request.path}}">Login</a>
+                
+                 {% endif %}
+                </li> 
+                <li>
+                  <a href="{% url 'index' %}">Home</a>
+                </li>
+                <li>
+                  <a href="{% url 'feed' %}">Feed</a>
+                </li>
+            </ul>
+          </div>
+        {% endblock %}
 
-  <div class="row">
-    <div class="col-sm-2">
-      {% block sidebar %}
-        <ul class="sidebar-nav">
-         {% if user.is_authenticated %}
-           <li>User: {{ user.get_username }}</li>
-           <li><a href="{% url 'logout'%}?next={{request.path}}">Logout</a></li>   
-         {% else %}
-           <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>   
-         {% endif %}
-          <li><a href="{% url 'index' %}">Home</a></li>
-          <li><a href="{% url 'feed' %}">Feed</a></li>
-        </ul>
-      {% endblock %}
+          <div class="col-xl-10">
+            <h1>My Blog</h1>
+
+            <p>Welcome to <em>My Blog</em>.</p>
+            <hr>
+            {% block content %}{% endblock %}
+          </div>
+      </div>
     </div>
-    <div class="col-sm-10">
-      <h1>My Blog</h1>
-
-      <p>Welcome to <em>My Blog</em>.</p>
-      <hr>
-
-      {% block content %}{% endblock %}
-      
-    </div>
-  </div>
 
   <script src="{% static 'js/vendor/modernizr-3.11.2.min.js' %}"></script>
   <script src="{% static 'js/plugins.js' %}"></script>

@@ -21,10 +21,18 @@
         {% endif %} 
 
     {% if not request.user|has_group:"Member" %}
-        <div>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditPostModal">
-              Edit Post
-            </button>
+        <div class="row">
+            <div class="col-1">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditPostModal">
+                  Edit
+                </button>
+            </div>
+            <div class="col-1">
+                <form action="{% url 'post-delete' id=post.id %}" method="post">
+                   {% csrf_token %}
+                   <button class="btn btn-danger" type="submit" >Delete<i class="post-delete"></i></button>
+                </form>
+            </div>
         </div>
     {% endif %}
 
@@ -40,7 +48,7 @@
             <p><strong>Author:</strong> {{ comment.author.get_username }}</p> 
             {% if user.is_authenticated %}
                 {% if not request.user|has_group:"Member" %}
-                    <form action="{% url 'comment-delete' id=comment.pk %}" method="post">
+                    <form action="{% url 'comment-delete' id=comment.id %}" method="post">
                        {% csrf_token %}
                        <button class="btn btn-danger" type="submit" >Delete<i class="comment-delete"></i></button>
                     </form>
@@ -67,7 +75,7 @@
 
 
 <!-- Edit Post Modal -->
-<form class="modal fade" id="EditPostModal" tabindex="-1" role="dialog" aria-labelledby="EditPostModalLabel" aria-hidden="true"  method="post" action="/post/edit/{{ post.id }}">
+<form class="modal fade" id="EditPostModal" tabindex="-1" role="dialog" aria-labelledby="EditPostModalLabel" aria-hidden="true"  method="post" action="{% url 'post-edit' post.id %}">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">

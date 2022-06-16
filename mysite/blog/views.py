@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.syndication.views import Feed
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.defaultfilters import truncatewords
 from django.urls import reverse
 from django.utils.text import slugify
@@ -20,7 +20,6 @@ from .models import Comment, Post
 
 
 class PostListView(LoginRequiredMixin, FormMixin, ListView):
-    object_list = Post.objects.filter(valid=1)
     model = Post
     paginate_by = 10
     form_class = PostForm
@@ -35,6 +34,8 @@ class PostListView(LoginRequiredMixin, FormMixin, ListView):
                                         }
                                     )
         return context
+    def get_queryset(self):
+        return Post.objects.filter(valid=True)
 
     def get_success_url(self):
         return reverse('index')
@@ -72,6 +73,7 @@ class PostDetailView(LoginRequiredMixin, FormMixin, DetailView):
                                     )
         context['form_edit_post'] = PostForm(initial={
                                             'title': self.object.title,
+                                            'slug': self.object.slug,
                                             'body': self.object.body,
                                             'tags': [tag for tag in self.object.tags.all()],
                                             'status': self.object.status,
@@ -141,9 +143,9 @@ def register_request(request):
             )
 
 def delete_comment(request, id):
-    comment = Comment.objects.get(pk=id)
+    comment = get_object_or_404(Comment, id=id)
     if comment is not None:
-        post = Post.objects.get(pk=comment.post.id)
+        post = get_object_or_404(Post, id=comment.post.id)
         if post is not None:
             comment.valid = False
             comment.updated = now()
@@ -157,21 +159,29 @@ def delete_comment(request, id):
             ))
     return redirect('/blog')
 
+def delete_post(request, id):
+    post = get_object_or_404(Post, id=id)
+    if post is not None:
+        post.valid = False
+        post.updated = now()
+        post.save()
+        return redirect('/blog')
+    return redirect('/blog')
 
-            #def post_edit(request):
-            #if request.method == "POST":
-            #    form = NewUserForm(request.POST)
-            #    if form.is_valid():
-            #        user = form.save()
-            #        group = Group.objects.get(name='Member')
-            #        user.groups.add(group)
-            #        return redirect('/blog')
-            #    messages.error(request, "Unsuccessful registration. Invalid information.")
-            #form = NewUserForm()
-            #return render(
-            #                request, 
-            #                "registration/register.html", 
-            #                { 
-            #                    "form" : form 
-            #                }
-            #        )
+
+def post_edit(request, id):
+    post = get_object_or_404(Post, id=id)
+    if post is not None and request.method == "POST":
+        form = PostForm(request.POST or None, instance=post)
+        if form is not None:
+            print(form.errors.as_data())
+            if form.is_valid():
+                form.save()
+                return redirect(reverse('post-detail', kwargs={
+                                         'year': post.created.year,
+                                         'month': post.created.month,
+                                         'day': post.created.day,
+                                         'slug': post.slug,
+                     }
+            ))
+    return redirect('/blog')

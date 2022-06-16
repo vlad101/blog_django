@@ -1,5 +1,8 @@
 .sidebar-nav {
-    margin-top: 20px;
+    margin-top: 5px;
     padding: 0;
+}
+
+.sidebar-nav ul {
     list-style: none;
 }

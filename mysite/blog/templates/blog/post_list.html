@@ -6,75 +6,94 @@
 {% load auth_extras %}
 {% load crispy_forms_tags %}
 
-<div>
-    <img src="{% static "img/icon.png" %}" alt="My image" width="100px" />
-</div>  
 
-<p>The blog has the following record counts: 
-{% if post_list %} 
-  {{ post_list.count }} post{{ post_list.count|pluralize }} 
-{% else %}
-  0 posts
-{% endif %} 
-</p>
 
-{% if post_list %}
-<ul>
-
-  {% for post in post_list %}
-
-      {% if request.user|has_group:"Member" %}
-        {% if post.status != "d" %}
-          <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a> ({{post.body}})</li>
-        {% endif %}
-      {% else %}
-        <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a> ({{post.body}})</li>
-      {% endif %}
-
-  {% endfor %}
-
-</ul>
-
-{% else %}
-  <p>There are no posts.</p>
-{% endif %}  
-
-{% block pagination %}
-  {% if is_paginated %}
-      <div class="pagination">
-          <span class="page-links">
-              {% if page_obj.has_previous %}
-                  <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">previous</a>
-              {% endif %}
-              <span class="page-current">
-                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-              </span>
-              {% if page_obj.has_next %}
-                  <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">next</a>
-              {% endif %}
-          </span>
+<div class="row">
+  {% if not request.user|has_group:"Member" %}
+      <div>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddPostModal">
+            Add Post
+          </button>
       </div>
   {% endif %}
-{% endblock %} 
+</div>
 
-<hr>
-<h2>Add a post</h2>
-{% if not request.user|has_group:"Member" %}
-    <div>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddPostModal">
-          Add Post
-        </button>
-    </div>
-{% endif %}
 
-<hr><p>You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.</p>
+<div class="row">
 
+  {% if post_list %}
+  <dl class="dl-horizontal">
+
+    {% for post in post_list %}
+        
+        {% if request.user|has_group:"Member" %}
+          {% if post.status != "d" %}
+            <dt>
+              <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+            </dt> 
+            <dd>
+              {{post.body}}
+            </dd>
+          {% endif %}
+        {% else %}
+          <dt>
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+          </dt> 
+          <dd>
+            {{post.body}}
+          </dd>
+        {% endif %}
+
+    {% endfor %}
+
+  </dl>
+
+
+  {% else %}
+    <p>There are no posts.</p>
+  {% endif %}
+
+</div> 
+
+<div class="row">
+  {% block pagination %}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">&#60;&#60;</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">&#62;&#62;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+  {% endblock %} 
+</div> 
+
+<div class="row">
+  <p>The blog has the following record counts: 
+  {% if post_list %} 
+    {{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }} 
+  {% else %}
+    0 posts
+  {% endif %} 
+  </p>
+</div>
+
+<div class="row">
+  <p>You have visited this page {{ num_visits }} time{{ num_visits|pluralize }}.</p>
+</div>
 <!-- Add Post Modal -->
 <form class="modal fade" id="AddPostModal" tabindex="-1" role="dialog" aria-labelledby="AddPostModalLabel" aria-hidden="true"  method="post" action="">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Add Post "{{ post.title }}"</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Add New Post</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>

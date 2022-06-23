@@ -9,8 +9,9 @@ from .models import Comment, Post
 class CommentForm(ModelForm):
     class Meta:
         model = Comment
-        fields = ['name', 'body', 'author', 'post', 'updated']
+        fields = ['id', 'name', 'body', 'author', 'post', 'updated']
         widgets = {
+                    'id': forms.HiddenInput(),
                     'author': forms.HiddenInput(),
                     'post': forms.HiddenInput(),
                     'updated': forms.HiddenInput(),

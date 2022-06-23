@@ -1,10 +1,14 @@
+from django.core import serializers
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.syndication.views import Feed
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template import RequestContext
 from django.template.defaultfilters import truncatewords
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils.timezone import now
@@ -77,6 +81,7 @@ class PostDetailView(LoginRequiredMixin, FormMixin, DetailView):
                                             'body': self.object.body,
                                             'tags': [tag for tag in self.object.tags.all()],
                                             'status': self.object.status,
+                                            'updated': now(),
                                         }
                                     )
         return context
@@ -102,7 +107,7 @@ class PostDetailView(LoginRequiredMixin, FormMixin, DetailView):
         form.save()
         return super(PostDetailView, self).form_valid(form)
 
-class TagDetailView(DetailView):
+class TagDetailView(LoginRequiredMixin, DetailView):
     model = Tag
 
     def get_context_data(self, **kwargs):
@@ -142,7 +147,8 @@ def register_request(request):
                     }
             )
 
-def delete_comment(request, id):
+@login_required
+def comment_delete(request, id):
     comment = get_object_or_404(Comment, id=id)
     if comment is not None:
         post = get_object_or_404(Post, id=comment.post.id)
@@ -159,22 +165,58 @@ def delete_comment(request, id):
             ))
     return redirect('/blog')
 
-def delete_post(request, id):
+@login_required
+def comment_get_edit_form(request, id):
+    comment = get_object_or_404(Comment, pk=id)
+    if comment is not None:
+        context = {
+            "modal_form": CommentForm(initial = {
+                                    'id': comment.id,
+                                    'post': comment.post,
+                                    'author': comment.author,
+                                    'name': comment.name,
+                                    'body': comment.body,
+                                    'updated': now(),
+                                }
+                            ),
+            "modal_id": "EditCommentModal",
+            "modal_label": "EditCommentModalLabel",
+            "modal_form_action_url": "",
+            "modal_title": "Edit Comment",
+        }
+        comment_data = render_to_string('blog/components/modal.html', context)
+    return JsonResponse(comment_data, safe=False)
+
+@login_required
+def comment_edit(request, id):
+    success = False
+    comment = get_object_or_404(Comment, id=id)
+    if comment is not None and request.method == "POST":
+        post = get_object_or_404(Post, pk=comment.post.id)
+        if post is not None:
+            form = CommentForm(request.POST or None, instance=comment)
+            if form is not None:
+                if form.is_valid():
+                    form.save()
+                    success = True
+    return JsonResponse({"success":success}, safe=False)
+
+@login_required
+def post_delete(request, id):
     post = get_object_or_404(Post, id=id)
     if post is not None:
         post.valid = False
         post.updated = now()
         post.save()
-        return redirect('/blog')
     return redirect('/blog')
 
-
+@login_required
 def post_edit(request, id):
     post = get_object_or_404(Post, id=id)
     if post is not None and request.method == "POST":
         form = PostForm(request.POST or None, instance=post)
         if form is not None:
-            print(form.errors.as_data())
+            #print(form.errors.as_data())
             if form.is_valid():
                 form.save()
                 return redirect(reverse('post-detail', kwargs={

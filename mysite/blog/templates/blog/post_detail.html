@@ -1,7 +1,6 @@
 {% extends "base_generic.html" %}
 
 {% load auth_extras %}
-{% load crispy_forms_tags %}
 
 {% block content %}
 
@@ -42,16 +41,24 @@
     <ul>
       {% for comment in comments %} 
         <li>
-            <p><strong>Name:</strong> {{ comment.name }}</p>
-            <p><strong>Body:</strong> {{ comment.body }}</p>
+            <p><strong>Name:</strong><span id="comment_name_{{ comment.id }}"> {{ comment.name }}</span></p>
+            <p><strong>Body:</strong><span id="comment_body_{{ comment.id }}"> {{ comment.body }}</span></p>
             <p><strong>Created:</strong> {{ comment.created }}</p> 
             <p><strong>Author:</strong> {{ comment.author.get_username }}</p> 
             {% if user.is_authenticated %}
-                {% if not request.user|has_group:"Member" %}
-                    <form action="{% url 'comment-delete' id=comment.id %}" method="post">
-                       {% csrf_token %}
-                       <button class="btn btn-danger" type="submit" >Delete<i class="comment-delete"></i></button>
-                    </form>
+                {% if not request.user|has_group:"Member" or user.id == comment.author.id %}
+                    <div class="row">
+                        <div class="col-1">
+                            <button type="button" class="btn btn-primary" id="comment_edit_{{comment.id}}" data-toggle="modal" >
+                                Edit
+                            </button>
+                        </div>
+                        <div class="col-1">
+                            <form action="{% url 'comment-delete' id=comment.id %}" method="post">
+                               {% csrf_token %}
+                               <button class="btn btn-danger" type="submit" >Delete<i class="comment-delete"></i></button>
+                            </form>
+                        </div>
                 {% endif %}    
             {% else %}
                 <a href="{% url django.contrib.auth.login %}">Login</a>
@@ -75,47 +82,12 @@
 
 
 <!-- Edit Post Modal -->
-<form class="modal fade" id="EditPostModal" tabindex="-1" role="dialog" aria-labelledby="EditPostModalLabel" aria-hidden="true"  method="post" action="{% url 'post-edit' post.id %}">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Edit Post "{{ post.title }}"</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-           {% csrf_token %}
-           {{ form_edit_post|crispy }}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <input type="submit" value="Submit" class="btn btn-primary" />
-      </div>
-    </div>
-  </div>
-</form>
+{% include "blog/components/modal.html" with modal_id="EditPostModal" modal_label="EditPostModalLabel" modal_form_action_url="/blog/post/edit/"|add_str:post.id modal_form=form_edit_post modal_title="Edit Post '"|add_str:post.title|add_str:"'" %}
 
-<!-- Edit Post Modal -->
-<form class="modal fade" id="AddCommentModal" tabindex="-1" role="dialog" aria-labelledby="AddCommentModalLabel" aria-hidden="true"  method="post" action="">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Add Comment "{{ post.title }}"</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-           {% csrf_token %}
-           {{ form_add_comment|crispy }}
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <input type="submit" value="Submit" class="btn btn-primary" />
-      </div>
-    </div>
-  </div>
-</form>
+<!-- Add Post Modal -->
+{% include "blog/components/modal.html" with modal_id="AddCommentModal" modal_label="AddCommentModalLabel" modal_form=form_add_comment modal_title="Add Comment '"|add_str:post.title|add_str:"' " %}
+
+<!-- Edit Comment Modal loaded via ajax-->
+{% include "blog/components/modal.html" with modal_id="EditCommentModal" %}
 
 {% endblock %}

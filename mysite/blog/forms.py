@@ -1,7 +1,6 @@
-from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
-from django.forms import ModelForm
+from django.forms import CharField, EmailField, Form, HiddenInput, ModelForm
 
 
 from .models import Comment, Post
@@ -11,14 +10,14 @@ class CommentForm(ModelForm):
         model = Comment
         fields = ['id', 'name', 'body', 'author', 'post', 'updated']
         widgets = {
-                    'id': forms.HiddenInput(),
-                    'author': forms.HiddenInput(),
-                    'post': forms.HiddenInput(),
-                    'updated': forms.HiddenInput(),
+                    'id': HiddenInput(),
+                    'author': HiddenInput(),
+                    'post': HiddenInput(),
+                    'updated': HiddenInput(),
                 }
 
 class NewUserForm(UserCreationForm):
-    email = forms.EmailField(required=True)
+    email = EmailField(required=True)
 
     class Meta:
         model = User
@@ -36,8 +35,11 @@ class PostForm(ModelForm):
         model = Post
         fields = ['author', 'title', 'slug', 'body', 'updated', 'publish', 'tags', 'status']
         widgets = {
-                    'author': forms.HiddenInput(),
-                    'updated': forms.HiddenInput(),
-                    'publish': forms.HiddenInput(),
-                    'slug': forms.HiddenInput(),
+                    'author': HiddenInput(),
+                    'updated': HiddenInput(),
+                    'publish': HiddenInput(),
+                    'slug': HiddenInput(),
         }
+
+class PostSearchForm(Form):
+    search = CharField(max_length=100, help_text='Search posts (100 characters max.)')

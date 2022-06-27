@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User, Group
 from django.contrib.syndication.views import Feed
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext
@@ -18,14 +19,14 @@ from django.views.generic.edit import CreateView, FormMixin
 
 from taggit.models import Tag
 
-from .forms import CommentForm, PostForm, NewUserForm
+from .forms import CommentForm, PostForm, PostSearchForm, NewUserForm
 
 from .models import Comment, Post
 
 
 class PostListView(LoginRequiredMixin, FormMixin, ListView):
     model = Post
-    paginate_by = 10
+    paginate_by = 3
     form_class = PostForm
 
     def get_context_data(self, **kwargs):
@@ -38,6 +39,7 @@ class PostListView(LoginRequiredMixin, FormMixin, ListView):
                                         }
                                     )
         return context
+
     def get_queryset(self):
         return Post.objects.filter(valid=True)
 
@@ -227,3 +229,28 @@ def post_edit(request, id):
                      }
             ))
     return redirect('/blog')
+
+
+def search_results(request):
+    message = None
+    post_list = list()
+    form = PostSearchForm(request.GET or None)
+    if request.method == "GET":
+        if form.is_valid():
+            query = form.data['search']
+            post_list = Post.objects.filter(
+                (Q(valid=True) & Q(status='p')) & (Q(title__icontains=query) | Q(body__icontains=query)) 
+            )
+
+            if len(post_list) == 0:
+                message = 'No posts match search criteria.'
+
+    return render(
+                    request, 
+                    "blog/search_results.html", 
+                    context = {
+                        'post_list' : post_list,
+                        'form' : form,
+                        'message':  message,
+                    }
+            )

@@ -1,12 +1,10 @@
 {% extends "base_generic.html" %}
 
-{% block content %}
-
 {% load static %}
 {% load auth_extras %}
 {% load crispy_forms_tags %}
 
-
+{% block content %}
 
 <div class="row">
   {% if not request.user|has_group:"Member" %}
@@ -56,23 +54,9 @@
 </div> 
 
 <div class="row">
-  {% block pagination %}
-    {% if is_paginated %}
-        <div class="pagination">
-            <span class="page-links">
-                {% if page_obj.has_previous %}
-                    <a href="{{ request.path }}?page={{ page_obj.previous_page_number }}">&#60;&#60;</a>
-                {% endif %}
-                <span class="page-current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
-                {% if page_obj.has_next %}
-                    <a href="{{ request.path }}?page={{ page_obj.next_page_number }}">&#62;&#62;</a>
-                {% endif %}
-            </span>
-        </div>
-    {% endif %}
-  {% endblock %} 
+
+  {% include "blog/components/pagination.html" %}
+
 </div> 
 
 <div class="row">

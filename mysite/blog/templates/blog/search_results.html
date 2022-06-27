@@ -1,0 +1,44 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+{% load auth_extras %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<div class="row">
+    <form  action="{% url 'search_results' %}" method="GET">
+        {% csrf_token %}
+        {{ form|crispy }}               
+        <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+</div>
+
+<hr>
+<div class="row">
+  
+  {% if post_list %}
+      <dl class="dl-horizontal">
+        {% for post in post_list %}
+              <dt>
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+              </dt> 
+              <dd>
+                {{post.body}}
+              </dd>
+        {% endfor %}
+      </dl>
+  {% endif %}
+
+  {% if message %}
+    {{ message }}
+  {% endif %}
+
+</div> 
+
+<div class="row">
+
+  {% include "blog/components/pagination.html" %}
+
+</div> 
+{% endblock %}

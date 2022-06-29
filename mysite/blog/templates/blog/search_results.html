@@ -1,10 +1,13 @@
 {% extends "base_generic.html" %}
 
 {% load static %}
+
 {% load auth_extras %}
 {% load crispy_forms_tags %}
 
 {% block content %}
+
+<script src="{% static 'js/search.js' %}"></script>
 
 <div class="row">
     <form  action="{% url 'search_results' %}" method="GET">
@@ -41,4 +44,5 @@
   {% include "blog/components/pagination.html" %}
 
 </div> 
+
 {% endblock %}

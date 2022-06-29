@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
-from django.forms import CharField, EmailField, Form, HiddenInput, ModelForm
+from django.forms import CharField, EmailField, Form, HiddenInput, ModelForm, TextInput
 
 
 from .models import Comment, Post
@@ -42,4 +42,8 @@ class PostForm(ModelForm):
         }
 
 class PostSearchForm(Form):
-    search = CharField(max_length=100, help_text='Search posts (100 characters max.)')
+    search = CharField(
+                    max_length=100, 
+                    help_text='Search posts (100 characters max.)',
+                    widget=TextInput(attrs={'class': 'search'})
+             )

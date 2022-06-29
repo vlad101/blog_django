@@ -1,3 +1,5 @@
+import json
+
 from django.core import serializers
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -234,13 +236,11 @@ def post_edit(request, id):
 def search_results(request):
     message = None
     post_list = list()
-    form = PostSearchForm(request.GET or None)
     if request.method == "GET":
+        form = PostSearchForm(request.GET or None)
         if form.is_valid():
             query = form.data['search']
-            post_list = Post.objects.filter(
-                (Q(valid=True) & Q(status='p')) & (Q(title__icontains=query) | Q(body__icontains=query)) 
-            )
+            post_list = Post_Helper().get_post_search_results(query)
 
             if len(post_list) == 0:
                 message = 'No posts match search criteria.'
@@ -254,3 +254,19 @@ def search_results(request):
                         'message':  message,
                     }
             )
+
+def post_autocomplete_search(request):
+    title_list = list()
+    if request.method == "GET":
+        query = request.GET.get("term", "")
+        post_list = Post_Helper().get_post_search_results(query)
+        for post in post_list:
+            title_list.append(post.title)
+    return HttpResponse(json.dumps(title_list), 'application/json')
+
+
+class Post_Helper:
+    def get_post_search_results(self, query):
+        return Post.objects.filter(
+                    (Q(valid=True) & Q(status='p')) & (Q(title__icontains=query) | Q(body__icontains=query)) 
+                )

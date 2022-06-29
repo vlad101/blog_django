@@ -42,8 +42,8 @@ $(document).ready(function() {
                 // update data
                 if(updateCommentName != null && updateCommentBody != null) {
                     if(data.hasOwnProperty('success') && data.success) {
-                        $('#comment_name_' + commentId).text(updateCommentName);
-                        $('#comment_body_' + commentId).text(updateCommentBody);
+                        $('#comment_name_' + commentId).text(' ' + updateCommentName);
+                        $('#comment_body_' + commentId).text(' ' + updateCommentBody);
                     }
                 }
                 $('#' + editCommentModalStr).modal('hide');

@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.PostListView.as_view(), name='index'),
     path('post/<int:year>/<int:month>/<int:day>/<slug:slug>/', views.PostDetailView.as_view(), name='post-detail'),
     path('post/edit/<int:id>', views.post_edit, name='post-edit'),
+    path('post/share/<int:id>', views.post_share, name='post-share'),
     path('post/delete/<int:id>', views.post_delete, name='post-delete'),
     path('tag/<slug:slug>', views.TagDetailView.as_view(), name='tag-detail'),
     path('feed/', views.LatestPostFeed(), name='feed'),

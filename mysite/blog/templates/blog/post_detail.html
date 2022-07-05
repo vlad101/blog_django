@@ -22,6 +22,11 @@
     {% if not request.user|has_group:"Member" %}
         <div class="row">
             <div class="col-1">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#SharePostModal">
+                  Share
+                </button>
+            </div>
+            <div class="col-1">
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditPostModal">
                   Edit
                 </button>
@@ -89,5 +94,8 @@
 
 <!-- Edit Comment Modal loaded via ajax-->
 {% include "blog/components/modal.html" with modal_id="EditCommentModal" %}
+
+<!-- Edit Post Modal -->
+{% include "blog/components/modal.html" with modal_id="SharePostModal" modal_label="SharePostModalLabel" modal_form_action_url="/blog/post/share/"|add_str:post.id modal_form=form_share_post modal_title="Share Post '"|add_str:post.title|add_str:"'" %}
 
 {% endblock %}

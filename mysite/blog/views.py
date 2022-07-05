@@ -1,6 +1,7 @@
 import json
 
 from django.core import serializers
+from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -21,7 +22,7 @@ from django.views.generic.edit import CreateView, FormMixin
 
 from taggit.models import Tag
 
-from .forms import CommentForm, PostForm, PostSearchForm, NewUserForm
+from .forms import CommentForm, PostForm, PostShareForm, PostSearchForm, NewUserForm
 
 from .models import Comment, Post
 
@@ -88,6 +89,7 @@ class PostDetailView(LoginRequiredMixin, FormMixin, DetailView):
                                             'updated': now(),
                                         }
                                     )
+        context['form_share_post'] = PostShareForm()
         return context
 
     def get_success_url(self):
@@ -223,6 +225,40 @@ def post_edit(request, id):
             #print(form.errors.as_data())
             if form.is_valid():
                 form.save()
+                return redirect(reverse('post-detail', kwargs={
+                                         'year': post.created.year,
+                                         'month': post.created.month,
+                                         'day': post.created.day,
+                                         'slug': post.slug,
+                     }
+            ))
+    return redirect('/blog')
+
+
+@login_required
+def post_share(request, id):
+    post = get_object_or_404(Post, id=id)
+    if post is not None and request.method == "POST":
+        form = PostShareForm(request.POST)
+        if form is not None:
+            #print(form.errors.as_data())
+            if form.is_valid():
+                context = {
+                            'comment': form.data['comment'],
+                            'post': post,
+                            'post_url': "{0}://{1}{2}".format(request.scheme, request.get_host(), post.get_absolute_url()),
+                        }
+                msg_plain = render_to_string('blog/email/share_post.txt', context)
+                msg_html = render_to_string('blog/email/share_post.html', context)
+
+                send_mail(
+                    "{0} Shared Post!".format(request.user.get_username()),
+                    msg_plain,
+                    request.user.email,
+                    [form.data['email_to'], ],
+                    html_message=msg_html,
+                )
+
                 return redirect(reverse('post-detail', kwargs={
                                          'year': post.created.year,
                                          'month': post.created.month,

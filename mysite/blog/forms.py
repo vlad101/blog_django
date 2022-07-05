@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
-from django.forms import CharField, EmailField, Form, HiddenInput, ModelForm, TextInput
+from django.forms import CharField, EmailField, Form, HiddenInput, ModelForm, Textarea, TextInput
 
 
 from .models import Comment, Post
@@ -40,6 +40,14 @@ class PostForm(ModelForm):
                     'publish': HiddenInput(),
                     'slug': HiddenInput(),
         }
+
+class PostShareForm(Form):
+    email_to = EmailField(required=True)
+    comment = CharField(
+                widget=Textarea(attrs={"rows":5, "cols":20}
+                )
+            )
+
 
 class PostSearchForm(Form):
     search = CharField(

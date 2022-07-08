@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-ltdcg=olwsf!9)nzu_vd9h(at2m!5%0!q&_&$&=^7e$3fiu=l(
 DEBUG = True
 #DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1',]
 
 # Application definition
 
@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     'taggit',
     'crispy_forms',
+    'rest_framework',
+    'oauth2_provider',
 ]
 
 MIDDLEWARE = [
@@ -147,3 +149,19 @@ TAGGIT_CASE_INSENSITIVE = True
 
 # Set your default template pack 
 CRISPY_TEMPLATE_PACK = 'uni_form'
+
+# Set django oauth2 
+OAUTH2_PROVIDER = {
+    # this is the list of available scopes
+    'SCOPES': {'read': 'Read scope', 'write': 'Write scope', 'groups': 'Access to your groups',},
+}
+
+# Set django REST framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}

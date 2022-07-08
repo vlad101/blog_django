@@ -21,6 +21,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
 
+from .rest_serializer import UserList, UserDetails, GroupList, PostList, PostDetails
+
+admin.autodiscover()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -42,3 +45,13 @@ urlpatterns += [
 
 # Use static() to add url mapping to serve static files during development (only)
 urlpatterns+= static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Setup the URLs and include login URLs for the browsable API.
+urlpatterns += [
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('users/', UserList.as_view()),
+    path('users/<pk>/', UserDetails.as_view()),
+    path('groups/', GroupList.as_view()),
+    path('posts/', PostList.as_view()),
+    path('posts/<pk>/', PostDetails.as_view()),
+]

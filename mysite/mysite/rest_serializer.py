@@ -4,8 +4,6 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveAPIView
 from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope
 
-from blog.models import Post
-
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -16,11 +14,6 @@ class GroupSerializer(ModelSerializer):
     class Meta:
         model = Group
         fields = ("name", )
-
-class PostSerializer(ModelSerializer):
-    class Meta:
-        model = Post
-        fields = '__all__'
 
 # Create the User API views
 class UserList(ListCreateAPIView):
@@ -39,14 +32,3 @@ class GroupList(ListAPIView):
     required_scopes = ['groups']
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-
-# Create the Post API views
-class PostList(ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
-class PostDetails(RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated, TokenHasReadWriteScope]
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer

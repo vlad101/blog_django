@@ -2,6 +2,8 @@ from django.urls import path
 
 from . import views
 
+from .rest_serializer import PostList, PostDetails
+
 urlpatterns = [
     path('', views.PostListView.as_view(), name='index'),
     path('post/<int:year>/<int:month>/<int:day>/<slug:slug>/', views.PostDetailView.as_view(), name='post-detail'),
@@ -16,4 +18,12 @@ urlpatterns = [
     path('comment/delete/<int:id>', views.comment_delete, name='comment-delete'),
     path('comment/edit/<int:id>', views.comment_edit, name='comment-edit'),
     path('comment/<int:id>', views.comment_get_edit_form, name='comment-get-edit-form'),
+]
+
+
+# Setup the URLs and include login URLs for the browsable API.
+urlpatterns += [
+    path('posts/', PostList.as_view()),
+    #path('posts/<pk>/', PostDetails.as_view()),
+    path('posts/<pk>/', views.post_detail_api),
 ]
